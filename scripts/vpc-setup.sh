@@ -52,3 +52,34 @@ aws ec2 attach-internet-gateway \
   --internet-gateway-id $igw
 
 echo "Internet Gateway attached to VPC $vpcid"
+
+# Create Route Table
+
+routetable=$(aws ec2 create-route-table \
+  --vpc-id $vpcid \
+  --query 'RouteTable.RouteTableId' \
+  --output text)
+
+echo "Route Table created: $routetable"
+
+# Tag Route Table
+aws ec2 create-tags \
+  --resources $routetable \
+  --tags Key=Name,Value="myRouteTable" \
+  --output none
+echo "Route Table tagged with Name: myRouteTable"
+
+# Create Route to Internet Gateway
+aws ec2 create-route \
+    --route-table-id $routetable \
+    --destination-cidr-block 0.0.0.0/0 \
+    --gateway-id $igw
+echo "Route to Internet Gateway created in Route Table $routetable"
+
+# Associate Route Table with Public Subnet
+aws ec2 associate-route-table \
+  --subnet-id $pubsub1 \
+  --route-table-id $routetable \
+  --output none
+
+echo "Route Table $routetable associated with Public Subnet $pubsub1"
