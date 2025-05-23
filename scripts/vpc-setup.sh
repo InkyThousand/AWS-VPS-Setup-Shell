@@ -1,6 +1,9 @@
 # filepath: /aws-vpc-setup/scripts/vpc-setup.sh
 # Creating a VPC with a CIDR block of 10.0.0.0/24
 
+
+myip = $(curl -s http://checkip.amazonaws.com)
+
 vpcid=$(aws ec2 create-vpc \
     --cidr-block 10.0.0.0/25 \
     --tag-specifications 'ResourceType=vpc,Tags=[{Key=Name,Value=myVPC}]' \
@@ -83,3 +86,20 @@ aws ec2 associate-route-table \
   --output none
 
 echo "Route Table $routetable associated with Public Subnet $pubsub1"
+
+# Create Security Group
+sgid=$(aws ec2 create-security-group \
+  --group-name mySecurityGroup \
+  --description "Security group for my VPC - Restrict security group ingress to my IP" \
+  --vpc-id $vpcid \
+  --tag-specifications 'ResourceType=security-group,Tags=[{Key=Name,Value=mySecurityGroup}]' \
+  --query 'GroupId' \
+  --output text)
+echo "Security Group created: $sgid"
+
+# Add Inbound Rules to Security Group enabling SSH access from my IP
+aws ec2 authorize-security-group-ingress \
+  --group-id $sgid \
+  --protocol tcp \
+  --port 22 \
+  --cidr $myip
