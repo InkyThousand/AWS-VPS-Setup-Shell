@@ -1,9 +1,13 @@
-# filepath: /aws-vpc-setup/scripts/vpc-setup.sh
+#!/bin/bash
+# This script creates a VPC with a public and private subnet, an internet gateway, a route table, and a security group.
+#@author: Pavel Losiev
+
+#filepath: /aws-vpc-setup/scripts/vpc-setup.sh
+
+myip=$(curl -s http://checkip.amazonaws.com)/32
+echo "My IP address is: $myip"
+
 # Creating a VPC with a CIDR block of 10.0.0.0/24
-
-
-myip = $(curl -s http://checkip.amazonaws.com)
-
 vpcid=$(aws ec2 create-vpc \
     --cidr-block 10.0.0.0/25 \
     --tag-specifications 'ResourceType=vpc,Tags=[{Key=Name,Value=myVPC}]' \
@@ -68,8 +72,7 @@ echo "Route Table created: $routetable"
 # Tag Route Table
 aws ec2 create-tags \
   --resources $routetable \
-  --tags Key=Name,Value="myRouteTable" \
-  --output none
+  --tags Key=Name,Value="myRouteTable"
 echo "Route Table tagged with Name: myRouteTable"
 
 # Create Route to Internet Gateway
@@ -82,8 +85,7 @@ echo "Route to Internet Gateway created in Route Table $routetable"
 # Associate Route Table with Public Subnet
 aws ec2 associate-route-table \
   --subnet-id $pubsub1 \
-  --route-table-id $routetable \
-  --output none
+  --route-table-id $routetable
 
 echo "Route Table $routetable associated with Public Subnet $pubsub1"
 
