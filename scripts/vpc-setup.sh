@@ -1,9 +1,47 @@
 #!/bin/bash
-# This script creates a VPC with a public and private subnet, an internet gateway, a route table, and a security group.
+
 #@author: Pavel Losiev
+#@description: This script creates a VPC with a public and private subnet, an internet gateway, a route table, and a security group.
+#@date: 2023-10-01
+#@version: 1.0
+#@usage: ./vpc-setup.sh
+#@dependencies: AWS CLI, jq, curl
 
-#filepath: /aws-vpc-setup/scripts/vpc-setup.sh
+#############################################
 
+# Check if AWS CLI is installed
+if ! command -v aws &> /dev/null
+then
+    echo "AWS CLI could not be found. Please install it first."
+    exit
+fi
+# Check if jq is installed
+if ! command -v jq &> /dev/null
+then
+    echo "jq could not be found. Please install it first."
+    exit
+fi
+# Check if curl is installed
+if ! command -v curl &> /dev/null
+then
+    echo "curl could not be found. Please install it first."
+    exit
+fi
+# Check if AWS credentials are configured
+if ! aws sts get-caller-identity &> /dev/null
+then
+    echo "AWS credentials are not configured. Please configure them first."
+    exit
+fi
+# Check if the region is set
+if ! aws configure get region &> /dev/null
+then
+    echo "AWS region is not set. Please set it first."
+    exit
+fi
+############################################33
+
+# Get the current public IP address
 myip=$(curl -s http://checkip.amazonaws.com)/32
 echo "My IP address is: $myip"
 
@@ -17,7 +55,6 @@ vpcid=$(aws ec2 create-vpc \
 echo "VPC created: $vpcid"
 
 # Create Private Subnet
-
 privsub1=$(aws ec2 create-subnet \
   --vpc-id $vpcid \
   --cidr-block 10.0.0.0/26 \
@@ -29,7 +66,6 @@ privsub1=$(aws ec2 create-subnet \
 echo "Private Subnet created: $privsub1"
 
 # Create Public Subnet
-
 pubsub1=$(aws ec2 create-subnet \
   --vpc-id $vpcid \
   --cidr-block 10.0.0.64/28 \
@@ -41,7 +77,6 @@ pubsub1=$(aws ec2 create-subnet \
 echo "Public Subnet created: $pubsub1"
 
 # Enable Public IP on launch
-
 aws ec2 modify-subnet-attribute \
   --subnet-id $pubsub1 \
   --map-public-ip-on-launch
@@ -61,7 +96,6 @@ aws ec2 attach-internet-gateway \
 echo "Internet Gateway attached to VPC $vpcid"
 
 # Create Route Table
-
 routetable=$(aws ec2 create-route-table \
   --vpc-id $vpcid \
   --query 'RouteTable.RouteTableId' \
@@ -89,6 +123,8 @@ aws ec2 associate-route-table \
 
 echo "Route Table $routetable associated with Public Subnet $pubsub1"
 
+###################################################
+
 # Create Security Group
 sgid=$(aws ec2 create-security-group \
   --group-name mySecurityGroup \
@@ -105,3 +141,22 @@ aws ec2 authorize-security-group-ingress \
   --protocol tcp \
   --port 22 \
   --cidr $myip
+echo "Inbound rule added to Security Group $sgid allowing SSH access from $myip"
+
+
+# Allocate Elastic IP for NAT Gateway
+eip_alloc_id=$(aws ec2 allocate-address --domain vpc --query 'AllocationId' --output text)
+echo "Elastic IP allocated for NAT Gateway: $eip_alloc_id"
+
+# Create NAT Gateway in the public subnet
+nat_gw_id=$(aws ec2 create-nat-gateway \
+  --subnet-id $pubsub1 \
+  --allocation-id $eip_alloc_id \
+  --tag-specifications 'ResourceType=natgateway,Tags=[{Key=Name,Value=myNATGateway}]' \
+  --query 'NatGateway.NatGatewayId' \
+  --output text)
+echo "NAT Gateway created: $nat_gw_id"
+
+# Wait for NAT Gateway to become available
+echo "Waiting for NAT Gateway to become available..."
+aws ec2 wait nat-gateway-available --nat-gateway-ids $nat_gw_id
