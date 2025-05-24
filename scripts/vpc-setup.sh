@@ -106,8 +106,8 @@ echo "Route Table created: $routetable"
 # Tag Route Table
 aws ec2 create-tags \
   --resources $routetable \
-  --tags Key=Name,Value="myRouteTable"
-echo "Route Table tagged with Name: myRouteTable"
+  --tags Key=Name,Value="myPublic RouteTable"
+echo "Route Table tagged with Name: myPublic RouteTable"
 
 # Create Route to Internet Gateway
 aws ec2 create-route \
@@ -158,5 +158,37 @@ nat_gw_id=$(aws ec2 create-nat-gateway \
 echo "NAT Gateway created: $nat_gw_id"
 
 # Wait for NAT Gateway to become available
-echo "Waiting for NAT Gateway to become available..."
+echo "🕒 Waiting for NAT Gateway to become available..."
 aws ec2 wait nat-gateway-available --nat-gateway-ids $nat_gw_id
+
+###################################################
+
+# Create Route Table for Private Subnet
+priv_routetable=$(aws ec2 create-route-table \
+  --vpc-id $vpcid \
+  --query 'RouteTable.RouteTableId' \
+  --output text)
+echo "Private Route Table created: $priv_routetable"
+
+# Tag Private Route Table
+aws ec2 create-tags \
+  --resources $priv_routetable \
+  --tags Key=Name,Value="myPrivate RouteTable"
+echo "Private Route Table tagged with Name: myPrivate RouteTable"
+
+# Create Route to NAT Gateway in Private Route Table
+aws ec2 create-route \
+    --route-table-id $priv_routetable \
+    --destination-cidr-block 0.0.0/0 \
+    --nat-gateway-id $nat_gw_id
+echo "Route to NAT Gateway created in Private Route Table $priv_routetable"
+
+# Associate Private Route Table with Private Subnet
+aws ec2 associate-route-table \
+  --subnet-id $privsub1 \
+  --route-table-id $priv_routetable
+echo "Private Route Table $priv_routetable associated with Private Subnet $privsub1"
+
+echo "🚀 VPC setup completed successfully! 🚀"
+
+###################################################
