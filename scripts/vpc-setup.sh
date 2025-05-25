@@ -2,7 +2,7 @@
 
 #@author: Pavel Losiev
 #@description: PHASE 1 -  VPC with a public and private subnet, an internet gateway, a route table, and a security group.
-#@date: 2023-10-01
+#@date: 2025-23-05
 #@version: 1.0
 #@dependencies: AWS CLI, jq, curl
 

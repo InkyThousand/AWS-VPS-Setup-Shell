@@ -2,7 +2,7 @@
 
 #@author: Pavel Losiev
 #@description: PHASE 2 - EC2 Instance Launch with User Data.
-#@date: 2023-10-01
+#@date: 2025-25-05
 #@usage: ./instances-setup.sh
 #@dependencies: AWS CLI, jq, curl
 

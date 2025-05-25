@@ -9,6 +9,7 @@ aws-vpc-setup
 ├── scripts
 │   └── vpc-setup.sh        # Bash script to set up the VPC
 |   └── instances-setup.sh  # Bash script to EC2 Instances Lanch
+|   └── vpc-teardown.sh     # This will destroy the VPC, subnets, gateways, and route tables
 └── README.md               # Project documentation
 ```
 ## Project Phases
@@ -72,22 +73,26 @@ To set up the VPC using the provided Bash script, follow these steps:
    cd aws-vpc-setup/scripts
    ```
 
-2. Make the script executable:
+2. Make the scripts executable:
    ```
-   chmod +x vpc-setup.sh
-   ```
-
-3. Run the script:
-   ```
-   ./vpc-setup.sh
+   chmod +x scripts/vpc-setup.sh scripts/instances-setup.sh scripts/vpc-teardown.sh
    ```
 
-<!-- ## Cleanup
+3. Run the script for Phase 1:
+   ```
+   ./scripts/vpc-setup.sh
+   ```
+4. Run the scripts for Phase 2:
+    ```
+    ./scripts/instances-setup.sh
+    ```
+
+## Cleanup
 To delete all resources when finished:
 ```
-./vpc-teardown.sh
+./scripts/vpc-teardown.sh
 ```
-Warning: This will destroy the VPC, subnets, gateways, and route tables you created. -->
+Warning: This will destroy the VPC, subnets, gateways, and route tables you created.
 
 ## License & Acknowledgments
 
