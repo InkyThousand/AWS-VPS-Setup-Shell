@@ -15,8 +15,9 @@ aws-vpc-setup
 
 | Phase | Description                                                  | File                        |
 |-------|--------------------------------------------------------------|-----------------------------|
-| 01    | VPC, Subnet Setup Routing and NAT Gateway Configuration      | scripts/vpc-setup.sh        |
-| 02    | Security Groups Setup, EC2 Instance Launch with User Data    | scripts/instances-setup.sh  |
+| 01    | VPC, Subnet Setup Routing, NAT Gateway Configuration and     | scripts/vpc-setup.sh        |
+|       | Security Groups Setup                                        |                             |
+| 02    | EC2 Instance Launch with User Data                           | scripts/instances-setup.sh  |
 
 
 ## Prerequisites
@@ -81,12 +82,12 @@ To set up the VPC using the provided Bash script, follow these steps:
    ./vpc-setup.sh
    ```
 
-## Cleanup
+<!-- ## Cleanup
 To delete all resources when finished:
 ```
 ./vpc-teardown.sh
 ```
-Warning: This will destroy the VPC, subnets, gateways, and route tables you created.
+Warning: This will destroy the VPC, subnets, gateways, and route tables you created. -->
 
 ## License & Acknowledgments
 
