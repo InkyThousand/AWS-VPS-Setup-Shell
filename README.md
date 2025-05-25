@@ -8,19 +8,59 @@ This project sets up an AWS Virtual Private Cloud (VPC). It includes one public 
 aws-vpc-setup
 ├── scripts
 │   └── vpc-setup.sh        # Bash script to set up the VPC
+|   └── instances-setup.sh  # Bash script to EC2 Instances Lanch
 └── README.md               # Project documentation
 ```
+## Project Phases
+
+| Phase | Description                                                  | File                        |
+|-------|--------------------------------------------------------------|-----------------------------|
+| 01    | VPC, Subnet Setup Routing and NAT Gateway Configuration      | scripts/vpc-setup.sh        |
+| 02    | Security Groups Setup, EC2 Instance Launch with User Data    | scripts/instances-setup.sh  |
+
 
 ## Prerequisites
 
 - AWS CLI installed and configured with appropriate permissions.
-- Access to an AWS account to create resources.
+- AWS IAM permissions to create VPCs, subnets, route tables, gateways, security groups, and EC2 instances.
 
-## Networks Setup
+## Network Setup
 
-VPC: 10.0.0.0/24 (provides 256 IPs)
-Private Subnet: 10.0.0.0/26 (62 usable IPs)
-Public Subnet: 10.0.0.64/28 (14 usable IPs)
+| Resource            | CIDR             | AZ           | Notes                                          |
+|---------------------|------------------|--------------|------------------------------------------------|
+| **VPC**             | `10.0.0.0/25`    | —            | Name: `myVPC`                                  |
+| **Public Subnet**   | `10.0.0.64/28`   | `us-*-*a`    | Auto-assign Public IPv4, Name: `Public Subnet` |
+| **Private Subnet**  | `10.0.0.0/26`    | `us-*-*a`    | Name: `Private Subnet`                         |
+
+---
+
+## AWS Resources
+
+- **Internet Gateway**  
+  - ID: `myIGW`  
+  - Attached to: `myVPC`
+
+- **NAT Gateway**  
+  - ID: `myNATGateway`  
+  - Subnet: `Public Subnet`  
+  - Elastic IP: auto-allocated
+
+- **Route Tables**  
+  1. **Public Route Table** (`myPublic RouteTable`)  
+     - Associated Subnet: `Public Subnet`  
+     - Routes:  
+       - `0.0.0.0/0` → `myIGW`  
+  2. **Private Route Table** (`myPrivate RouteTable`)  
+     - Associated Subnet: `Private Subnet`  
+     - Routes:  
+       - `0.0.0.0/0` → `myNATGateway`
+
+- **Security Group** (`mySecurityGroup`)  
+  - Ingress:  
+    - SSH (TCP 22) from your IP only: `<YOUR_PUBLIC_IP>/32`  
+  - Egress:  
+    - All outbound TCP/UDP/ICMP
+
 
 ## Running the Script
 
@@ -40,3 +80,18 @@ To set up the VPC using the provided Bash script, follow these steps:
    ```
    ./vpc-setup.sh
    ```
+
+## Cleanup
+To delete all resources when finished:
+```
+./vpc-teardown.sh
+```
+Warning: This will destroy the VPC, subnets, gateways, and route tables you created.
+
+## License & Acknowledgments
+
+Script authored by Pavel Losiev
+Built with ❤️ on AWS
+Uses AWS best practices for network isolation and security
+
+> Feel free to fill in any missing IDs or AZ names, and update the diagram section with your preferred visual.

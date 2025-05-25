@@ -1,10 +1,9 @@
 #!/bin/bash
 
 #@author: Pavel Losiev
-#@description: This script creates a VPC with a public and private subnet, an internet gateway, a route table, and a security group.
+#@description: PHASE 1 -  VPC with a public and private subnet, an internet gateway, a route table, and a security group.
 #@date: 2023-10-01
 #@version: 1.0
-#@usage: ./vpc-setup.sh
 #@dependencies: AWS CLI, jq, curl
 
 #############################################
