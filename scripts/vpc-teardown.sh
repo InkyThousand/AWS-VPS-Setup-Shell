@@ -8,7 +8,6 @@
 
 # Terminate EC2s → Delete NAT Gateway → Release EIP → Detach/Delete IGW → Delete subnets/route tables/SGs → Delete VPC.
 
-
 #############################################
 # Set your VPC ID (or retrieve dynamically)
 vpcid=$(aws ec2 describe-vpcs \
@@ -81,7 +80,6 @@ if [ "$igw" != "None" ]; then
     aws ec2 delete-internet-gateway --internet-gateway-id $igw
     echo "Deleted Internet Gateway: $igw"
 fi
-  
 
 # Delete subnets
 subnets=$(aws ec2 describe-subnets \
@@ -97,8 +95,9 @@ done
 # Delete route tables (only non-main ones associated with this VPC)
 rts=$(aws ec2 describe-route-tables \
     --filters "Name=vpc-id,Values=$vpcid" \
-    --query "RouteTables[?!Associations[?Main==\`true\`]].RouteTableId" \
-    --output text)
+    --query "RouteTables[?(!Associations || Associations[?Main!=\`true\`])].RouteTableId" \
+    --output text
+)
 for rt in $rts; do
     # First, disassociate any subnet associations
     assocs=$(aws ec2 describe-route-tables \
