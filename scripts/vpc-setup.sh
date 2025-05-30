@@ -178,7 +178,7 @@ echo "Private Route Table tagged with Name: myPrivate RouteTable"
 # Create Route to NAT Gateway in Private Route Table
 aws ec2 create-route \
     --route-table-id $priv_routetable \
-    --destination-cidr-block 0.0.0/0 \
+    --destination-cidr-block 0.0.0.0/0 \
     --nat-gateway-id $nat_gw_id
 echo "Route to NAT Gateway created in Private Route Table $priv_routetable"
 
