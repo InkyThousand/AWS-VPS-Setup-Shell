@@ -35,32 +35,30 @@ natgw=$(aws ec2 describe-nat-gateways \
     --query "NatGateways[0].NatGatewayId" \
     --output text)
 if [ "$natgw" != "None" ]; then
-#   eipalloc=$(aws ec2 describe-nat-gateways \
-#     --nat-gateway-ids $natgw \
-#     --query "NatGateways[0].NatGatewayAddresses[0].AllocationId" \
-#     --output text)
+    #   eipalloc=$(aws ec2 describe-nat-gateways \
+    #     --nat-gateway-ids $natgw \
+    #     --query "NatGateways[0].NatGatewayAddresses[0].AllocationId" \
+    #     --output text)
 
-    # The logic in this code is incorrect. The while loop condition is wrong - 
-# it continues looping when the NAT Gateway is deleted, which is the opposite of what we want.
-# Here is the corrected version:
-aws ec2 delete-nat-gateway --nat-gateway-id $natgw
-echo "Waiting for NAT Gateway $natgw to disappear..."
-while aws ec2 describe-nat-gateways \
-        --nat-gateway-ids $natgw \
-        --query 'NatGateways[].State' \
-        --output text | grep -v "deleted" > /dev/null; do
-    echo "NAT Gateway status: $(aws ec2 describe-nat-gateways --nat-gateway-ids $natgw --query 'NatGateways[].State' --output text)"
-    sleep 5
-done
-echo "Deleted NAT Gateway: $natgw"
-    # "Release the Elastic IP"- feature is commented out
-    # because it eed the correct IAM permissions to release Elastic IPs.
-    # Make sure your user/role has ec2:ReleaseAddress.
+    aws ec2 delete-nat-gateway --nat-gateway-id $natgw
+    echo "Waiting for NAT Gateway $natgw to disappear..."
+    while aws ec2 describe-nat-gateways \
+            --nat-gateway-ids $natgw \
+            --query 'NatGateways[].State' \
+            --output text | grep -v "deleted" > /dev/null; do
+        echo "NAT Gateway status: $(aws ec2 describe-nat-gateways --nat-gateway-ids $natgw --query 'NatGateways[].State' --output text)"
+        sleep 5
+    done
+    echo "Deleted NAT Gateway: $natgw"
 
-    # Uncomment the following lines if you have the necessary permissions
-    #   if [ "$eipalloc" != "None" ]; then
-    #     aws ec2 release-address --allocation-id $eipalloc
-    #   fi
+        # "Release the Elastic IP"- feature is commented out
+        # because it need the correct IAM permissions to release Elastic IPs.
+        # Make sure your user/role has ec2:ReleaseAddress.
+
+        # Uncomment the following lines if you have the necessary permissions
+        #   if [ "$eipalloc" != "None" ]; then
+        #     aws ec2 release-address --allocation-id $eipalloc
+        #   fi
 fi
 
 # Delete all network interfaces (except the default ones)

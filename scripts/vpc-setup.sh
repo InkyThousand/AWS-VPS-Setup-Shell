@@ -40,9 +40,6 @@ then
 fi
 ############################################33
 
-# Get the current public IP address
-myip=$(curl -s http://checkip.amazonaws.com)/32
-echo "My IP address is: $myip"
 
 # Creating a VPC with a CIDR block of 10.0.0.0/24
 vpcid=$(aws ec2 create-vpc \
@@ -123,25 +120,6 @@ aws ec2 associate-route-table \
 echo "Route Table $routetable associated with Public Subnet $pubsub1"
 
 ###################################################
-
-# Create Security Group
-sgid=$(aws ec2 create-security-group \
-  --group-name mySecurityGroup \
-  --description "Security group for my VPC - Restrict security group ingress to my IP" \
-  --vpc-id $vpcid \
-  --tag-specifications 'ResourceType=security-group,Tags=[{Key=Name,Value=mySecurityGroup}]' \
-  --query 'GroupId' \
-  --output text)
-echo "Security Group created: $sgid"
-
-# Add Inbound Rules to Security Group enabling SSH access from my IP
-aws ec2 authorize-security-group-ingress \
-  --group-id $sgid \
-  --protocol tcp \
-  --port 22 \
-  --cidr $myip
-echo "Inbound rule added to Security Group $sgid allowing SSH access from $myip"
-
 
 # Allocate Elastic IP for NAT Gateway
 eip_alloc_id=$(aws ec2 allocate-address --domain vpc --query 'AllocationId' --output text)
