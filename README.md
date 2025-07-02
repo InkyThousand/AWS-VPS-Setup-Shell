@@ -2,6 +2,8 @@
 
 This project sets up an AWS Virtual Private Cloud (VPC). It includes one public subnet and one private subnet, along with an Internet Gateway for the public subnet.
 
+In addition, it is possible to create an instance
+
 ## Project Structure
 
 ```
@@ -16,9 +18,9 @@ aws-vpc-setup
 
 | Phase | Description                                                  | File                        |
 |-------|--------------------------------------------------------------|-----------------------------|
-| 01    | VPC, Subnet Setup Routing, NAT Gateway Configuration and     | scripts/vpc-setup.sh        |
-|       | Security Groups Setup                                        |                             |
+| 01    | VPC, Subnet Setup Routing, NAT Gateway Configuration and Security Groups Setup    | scripts/vpc-setup.sh        |
 | 02    | EC2 Instance Launch with User Data                           | scripts/instances-setup.sh  |
+| **    | Teardown phase that deletes VPC and all related resources    | scripts/vpc-teardown.sh  |
 
 
 ## Prerequisites

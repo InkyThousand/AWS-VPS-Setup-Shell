@@ -99,3 +99,55 @@ instance_id=$(aws ec2 run-instances \
 )
 
 echo "BastionServer launched: $instance_id"
+
+##########################################
+
+# Create Security Group for Web Server
+web_server_sg=$(aws ec2 create-security-group \
+  --group-name WebServerSecurityGroup \
+  --description "Security group for Web Server - HTTP from anywhere, SSH from Bastion" \
+  --vpc-id $vpcid \
+  --tag-specifications 'ResourceType=security-group,Tags=[{Key=Name,Value=WebServerSecurityGroup}]' \
+  --query 'GroupId' \
+  --output text)
+echo "Web Server Security Group created: $web_server_sg"
+
+# Allow HTTP from anywhere
+aws ec2 authorize-security-group-ingress \
+  --group-id $web_server_sg \
+  --protocol tcp \
+  --port 80 \
+  --cidr 0.0.0.0/0
+
+# Allow SSH only from Bastion Security Group
+aws ec2 authorize-security-group-ingress \
+  --group-id $web_server_sg \
+  --protocol tcp \
+  --port 22 \
+  --source-group $bastion_sg
+
+echo "Inbound rules added to Web Server Security Group"
+
+
+# Launch webserserver in public subnet with connection into only from bastion server but with inbound rule to allow HTTP traffic from anywhere
+webserver_id=$(aws ec2 run-instances \
+  --image-id $al2023_ami \
+  --instance-type t2.micro \
+  --key-name $keypair \
+  --security-group-ids $web_server_sg \
+  --subnet-id $pubsub1 \
+  --user-data file://userdata.sh \
+  --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=WebServer}]' \
+  --query 'Instances[0].InstanceId' \
+  --output text
+)
+
+echo "WebServer launched: $webserver_id"
+
+# Get the public IP of the Bastion Server
+bastion_ip=$(aws ec2 describe-instances \
+  --instance-ids $instance_id \
+  --query 'Reservations[0].Instances[0].PublicIpAddress' \
+  --output text)
+
+echo "Bastion Server Public IP: $bastion_ip"
