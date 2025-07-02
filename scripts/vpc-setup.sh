@@ -40,6 +40,7 @@ then
 fi
 ############################################33
 
+az="us-west-2a"
 
 # Creating a VPC with a CIDR block of 10.0.0.0/24
 vpcid=$(aws ec2 create-vpc \
@@ -54,7 +55,7 @@ echo "VPC created: $vpcid"
 privsub1=$(aws ec2 create-subnet \
   --vpc-id $vpcid \
   --cidr-block 10.0.0.0/26 \
-  --availability-zone us-west-2a \
+  --availability-zone $az \
   --tag-specifications 'ResourceType=subnet,Tags=[{Key=Name,Value=Private Subnet}]' \
   --query 'Subnet.SubnetId' \
   --output text)
@@ -65,7 +66,7 @@ echo "Private Subnet created: $privsub1"
 pubsub1=$(aws ec2 create-subnet \
   --vpc-id $vpcid \
   --cidr-block 10.0.0.64/28 \
-  --availability-zone us-west-2a \
+  --availability-zone $az \
   --tag-specifications 'ResourceType=subnet,Tags=[{Key=Name,Value=Public Subnet}]' \
   --query 'Subnet.SubnetId' \
   --output text)
